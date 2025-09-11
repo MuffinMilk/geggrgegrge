@@ -1,1 +1,101 @@
-<html><head><base target="_blank"><base target="_blank"><meta http-equiv="origin-trial" content="A9AxgGSwmnfgzzkyJHILUr3H8nJ/3D+57oAsL4DBt4USlng4jZ0weq+fZtHC/Qwwn6gd4QSa5DzT3OBif+kXVA0AAAB4eyJvcmlnaW4iOiJodHRwczovL2ltYXNkay5nb29nbGVhcGlzLmNvbTo0NDMiLCJmZWF0dXJlIjoiUHJpdmFjeVNhbmRib3hBZHNBUElzIiwiZXhwaXJ5IjoxNjk1MTY3OTk5LCJpc1RoaXJkUGFydHkiOnRydWV9"><meta http-equiv="origin-trial" content="AlK2UR5SkAlj8jjdEc9p3F3xuFYlF6LYjAML3EOqw1g26eCwWPjdmecULvBH5MVPoqKYrOfPhYVL71xAXI1IBQoAAAB8eyJvcmlnaW4iOiJodHRwczovL2RvdWJsZWNsaWNrLm5ldDo0NDMiLCJmZWF0dXJlIjoiV2ViVmlld1hSZXF1ZXN0ZWRXaXRoRGVwcmVjYXRpb24iLCJleHBpcnkiOjE3NTgwNjcxOTksImlzU3ViZG9tYWluIjp0cnVlfQ=="></head><body data-new-gr-c-s-loaded="14.1202.0"><div id="fr" data="<iframe width=&quot;100%&quot; height=&quot;100%&quot; src=&quot;https://script.google.com/macros/s/AKfycbzjgnGGeTNL2DTjJzVx3WGvsLjEyA47O6xYss-ijTLWWwrQv9siK9Gn_QqNDlDkrc27/exec&quot; frameborder=&quot;0&quot; allowfullscreen></iframe>"><iframe width="100%" height="100%" src="https://script.google.com/macros/s/AKfycbzjgnGGeTNL2DTjJzVx3WGvsLjEyA47O6xYss-ijTLWWwrQv9siK9Gn_QqNDlDkrc27/exec" frameborder="0" allowfullscreen=""></iframe></div>
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+    <base href="https://cdn.jsdelivr.net/gh/genizy/web-port@main/pizza-tower/">
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+    <link rel="icon" type="x-icon" href="favicon.png">
+    <title>Pizza Tower 1.1.0 Web Port</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+    <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1">
+    </canvas>
+    <div id="pauseMenuContainer" hidden>
+        <div id="pauseMenuBorder">
+            <div id="pauseMenu">
+                <button id="resumeButton" onclick="resume()"> Resume </button>
+                <button id="quitButton" onclick="quitIfSupported()"> Quit </button>
+            </div>
+        </div>
+    </div>
+    <div class="loading">
+        <div class="spinner" id="spinner"></div>
+        <div class="emscripten" id="status">Downloading...</div>
+        <progress value="0" max="100" id="progress" hidden="1"></progress>
+    </div>
+    <div class="output-container" id="output-container">
+        <div id="message-container">
+            <div id="messages">
+            </div>
+        </div>
+        <script>
+          function mergeFiles(fileParts) {
+              return new Promise((resolve, reject) => {
+                  let buffers = [];
+      
+                  function fetchPart(index) {
+                      if (index >= fileParts.length) {
+                          let mergedBlob = new Blob(buffers);
+                          let mergedFileUrl = URL.createObjectURL(mergedBlob);
+                          resolve(mergedFileUrl);
+                          return;
+                      }
+                      fetch(fileParts[index]).then((response) => response.arrayBuffer()).then((data) => {
+                          buffers.push(data);
+                          fetchPart(index + 1);
+                      }).catch(reject);
+                  }
+                  fetchPart(0);
+              });
+          }
+      
+          function getParts(file, start, end) {
+              let parts = [];
+              for (let i = start; i <= end; i++) {
+                  parts.push(file + ".part" + i);
+              }
+              return parts;
+          }
+      
+          mergeFiles(getParts("game.unx", 1, 13)).then(async url => {
+              window.gameUnxUrl = url;
+      
+              const originalFetch = window.fetch;
+              window.fetch = async function (...args) {
+                  let [url, options] = args;
+                  if (typeof url === 'string' && url.includes("game.unx")) {
+                      console.log("fetch:", url);
+                      url = window.gameUnxUrl;
+                  } else if (url instanceof Request && url.url.includes("game.unx")) {
+                      console.log("fetch request:", url.url);
+                      url = new Request(window.gameUnxUrl, url);
+                  }
+                  return originalFetch.call(this, url, options);
+              };
+      
+              const originalOpen = XMLHttpRequest.prototype.open;
+              XMLHttpRequest.prototype.open = function (method, url, ...rest) {
+                  if (url.includes("game.unx")) {
+                      console.log("XHR:", url);
+                      url = window.gameUnxUrl;
+                  }
+                  return originalOpen.call(this, method, url, ...rest);
+              };
+              let index = document.createElement("script");
+              index.src = "index.js";
+              document.body.appendChild(index);
+      
+              let runner = document.createElement("script");
+              runner.src = "runner.js";
+              document.body.appendChild(runner);
+          }).catch(error => {
+              console.error("Failed to merge files:", error);
+          });
+      </script>      
+</body>
+
+</html>
