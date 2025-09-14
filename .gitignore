@@ -2,10 +2,10 @@
 <html lang="en-us">
 
 <head>
-    <base href="https://cdn.jsdelivr.net/gh/genizy/web-port@main/baldi-remaster/">
+    <base href="https://cdn.jsdelivr.net/gh/genizy/web-port@main/baldi-plus/">
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Unity WebGL Player | Baldi's Basics Classic Remastered</title>
+    <title>Unity WebGL Player | Baldi's Basics Plus</title>
     <style>
         html,
         body {
@@ -29,7 +29,7 @@
 <body>
     <div id="loading-text" style="color: white; font-size: 48px; font-family: cursive; text-align: center; margin-top: 20px;"> LOADING... </div>
     <canvas id="unity-canvas" tabindex="-1"></canvas>
-    <script src="Build/WebGL.loader.js"></script>
+    <script src="Build/Export.loader.js"></script>
     <script>
         if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
             var meta = document.createElement('meta');
@@ -102,8 +102,8 @@
             return parts;
         }
         (async () => {
-            const dataParts = getParts("Build/WebGL.data", 3);
-            const wasmParts = getParts("Build/WebGL.wasm", 3);
+            const dataParts = getParts("Build/Export.data", 2);
+            const wasmParts = getParts("Build/Export.wasm", 3);
             const allParts = [...dataParts, ...wasmParts];
             const sizes = await Promise.all(allParts.map(getSize));
             totalBytes = sizes.reduce((a, b) => a + b, 0);
@@ -113,12 +113,12 @@
             ]);
             createUnityInstance(document.querySelector("#unity-canvas"), {
                 dataUrl: dataUrl,
-                frameworkUrl: "Build/WebGL.framework.js",
+                frameworkUrl: "Build/Export.framework.js",
                 codeUrl: wasmUrl,
                 streamingAssetsUrl: "StreamingAssets",
                 companyName: "Basically Games",
-                productName: "Baldi's Basics Classic Remastered",
-                productVersion: "1.1",
+                productName: "Baldi's Basics Plus",
+                productVersion: "0.3.2",
             }).then(() => {
                 loadingText.remove();
             });
