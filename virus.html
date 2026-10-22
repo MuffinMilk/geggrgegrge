@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Funny Window Test</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding-top: 150px;
+    background: white;
+}
+button {
+    font-size: 24px;
+    padding: 18px 35px;
+    cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<h1>Funny Window Test 😂</h1>
+<p>Click the button to start the test.</p>
+<button id="start">Start Test</button>
+
+<script>
+let prankWindow;
+let moveTimer;
+let colorTimer;
+
+document.getElementById("start").onclick = function () {
+    // Open a separate window following the user's click.
+    prankWindow = window.open(
+        "about:blank",
+        "FunnyTest",
+        "width=400,height=300,left=200,top=150"
+    );
+
+    if (!prankWindow) {
+        alert("The browser blocked the popup. Allow popups for this page and try again.");
+        return;
+    }
+
+    prankWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head><title>Funny Test 😂</title>
+        <style>
+            body {
+                font-family: Arial;
+                text-align: center;
+                padding-top: 45px;
+                font-weight: bold;
+            }
+            h1 { font-size: 32px; }
+        </style>
+        </head>
+        <body>
+            <h1 id="msg">YOU ARE AN IDIOT!</h1>
+            <p>😂 HA HA HA 😂</p>
+        </body>
+        </html>
+    `);
+    prankWindow.document.close();
+
+    let x = 100;
+    let y = 100;
+    let dx = 17;
+    let dy = 13;
+
+    moveTimer = setInterval(() => {
+        if (prankWindow.closed) {
+            clearInterval(moveTimer);
+            clearInterval(colorTimer);
+            return;
+        }
+
+        // Attempt to move the actual popup window.
+        x += dx;
+        y += dy;
+
+        if (x > screen.availWidth - 420 || x < 0) dx *= -1;
+        if (y > screen.availHeight - 320 || y < 0) dy *= -1;
+
+        try {
+            prankWindow.moveTo(x, y);
+            prankWindow.focus();
+        } catch (e) {
+            // The browser may block window movement.
+        }
+    }, 250);
+
+    const colors = ["red", "blue", "green", "purple"];
+    colorTimer = setInterval(() => {
+        try {
+            const msg = prankWindow.document.getElementById("msg");
+            if (msg) {
+                msg.style.color =
+                    colors[Math.floor(Math.random() * colors.length)];
+            }
+        } catch (e) {}
+    }, 200);
+};
+</script>
+
+</body>
+</html>
